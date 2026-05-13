@@ -1,0 +1,53 @@
+@startuml
+skinparam shadowing false
+skinparam node {
+  BackgroundColor #F8FBFF
+  BorderColor #2E5EAA
+}
+skinparam database {
+  BackgroundColor #FFFDF6
+  BorderColor #8A6D00
+}
+
+title Sistema de Gestao das Olimpiadas - Diagrama de Implantacao
+
+node "Dispositivo do Usuario" as Cliente {
+  artifact "Navegador Web" as Browser
+}
+
+cloud "Internet" as Internet
+
+node "Servidor Web" as WebServer {
+  artifact "Nginx / Servidor HTTP" as Nginx
+  artifact "Frontend SGO\nHTML, CSS, JS" as Frontend
+}
+
+node "Servidor de Aplicacao" as AppServer {
+  artifact "API Backend SGO" as Backend
+  artifact "Modulos do Sistema\nCompeticoes, Inscricoes,\nAlocacao, Resultados, Relatorios" as Modulos
+}
+
+database "Servidor de Banco de Dados" as DBServer {
+  artifact "PostgreSQL" as PostgreSQL
+  artifact "Base SGO" as Base
+}
+
+node "Servidor de Arquivos" as FileServer {
+  artifact "Relatorios Exportados\nPDF/CSV" as Reports
+}
+
+cloud "Backup / Armazenamento" as Backup {
+  artifact "Copias de seguranca" as Backups
+}
+
+Browser --> Internet : HTTPS
+Internet --> Nginx : HTTPS
+Nginx --> Frontend : entrega arquivos estaticos
+Frontend --> Backend : REST/JSON
+Backend --> Modulos : executa regras de negocio
+Modulos --> PostgreSQL : JDBC/SQL
+PostgreSQL --> Base
+Modulos --> Reports : grava relatorios
+Base --> Backups : backup periodico
+Reports --> Backups : backup periodico
+@enduml

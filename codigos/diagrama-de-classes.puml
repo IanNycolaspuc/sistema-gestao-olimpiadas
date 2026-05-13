@@ -1,0 +1,156 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam class {
+  BackgroundColor #F8FBFF
+  BorderColor #2E5EAA
+  ArrowColor #333333
+}
+
+title Sistema de Gestao das Olimpiadas - Diagrama de Classes
+
+package "dominio" {
+  class Pais {
+    - id: Long
+    - nome: String
+    - sigla: String
+    + calcularTotalMedalhas(): int
+  }
+
+  class Atleta {
+    - id: Long
+    - nome: String
+    - dataNascimento: Date
+    - documento: String
+    - pais: Pais
+    + podeParticipar(competicao: Competicao): boolean
+  }
+
+  class Local {
+    - id: Long
+    - nome: String
+    - endereco: String
+    - capacidade: int
+    + estaDisponivel(data: Date, horario: Time): boolean
+  }
+
+  class Competicao {
+    - id: Long
+    - modalidade: String
+    - data: Date
+    - horario: Time
+    - status: StatusCompeticao
+    + cadastrar(): void
+    + alterarAgenda(data: Date, horario: Time): void
+    + inscreverAtleta(atleta: Atleta): Inscricao
+    + alocarLocal(local: Local): void
+    + registrarResultado(resultado: Resultado): void
+  }
+
+  class Inscricao {
+    - id: Long
+    - dataInscricao: DateTime
+    - status: StatusInscricao
+    + confirmar(): void
+    + cancelar(): void
+  }
+
+  class Resultado {
+    - id: Long
+    - dataRegistro: DateTime
+    - observacao: String
+    + validarPodio(): boolean
+  }
+
+  class ItemResultado {
+    - id: Long
+    - posicao: int
+    - medalha: TipoMedalha
+  }
+
+  enum TipoMedalha {
+    OURO
+    PRATA
+    BRONZE
+  }
+
+  enum StatusCompeticao {
+    PLANEJADA
+    CONFIRMADA
+    REALIZADA
+    CANCELADA
+  }
+
+  enum StatusInscricao {
+    PENDENTE
+    CONFIRMADA
+    CANCELADA
+  }
+}
+
+package "aplicacao" {
+  class CompeticaoService {
+    + cadastrarCompeticao(dados): Competicao
+    + atualizarCompeticao(id, dados): Competicao
+    + consultarCompeticoes(filtro): List<Competicao>
+  }
+
+  class InscricaoService {
+    + inscreverAtleta(atleta, competicao): Inscricao
+    + validarPaisPorModalidade(atleta, competicao): boolean
+  }
+
+  class AlocacaoService {
+    + alocarLocal(competicao, local): void
+    + verificarConflito(local, data, horario): boolean
+  }
+
+  class ResultadoService {
+    + registrarResultado(competicao, ouro, prata, bronze): Resultado
+  }
+
+  class RelatorioMedalhasService {
+    + gerarQuadroMedalhas(): List<LinhaQuadroMedalhas>
+  }
+
+  class LinhaQuadroMedalhas {
+    - pais: Pais
+    - ouro: int
+    - prata: int
+    - bronze: int
+    - total: int
+  }
+}
+
+package "persistencia" {
+  interface CompeticaoRepository
+  interface AtletaRepository
+  interface LocalRepository
+  interface ResultadoRepository
+  interface PaisRepository
+}
+
+Pais "1" <-- "0..*" Atleta : representa
+Competicao "1" o-- "0..*" Inscricao : possui
+Atleta "1" -- "0..*" Inscricao : realiza
+Competicao "0..*" --> "1" Local : ocorre em
+Competicao "1" --> "0..1" Resultado : gera
+Resultado "1" o-- "3" ItemResultado : podio
+ItemResultado "1" --> "1" Atleta : atleta
+ItemResultado "1" --> "1" TipoMedalha : medalha
+Competicao --> StatusCompeticao
+Inscricao --> StatusInscricao
+
+CompeticaoService ..> CompeticaoRepository
+CompeticaoService ..> Competicao
+InscricaoService ..> AtletaRepository
+InscricaoService ..> CompeticaoRepository
+InscricaoService ..> Inscricao
+AlocacaoService ..> LocalRepository
+AlocacaoService ..> CompeticaoRepository
+ResultadoService ..> ResultadoRepository
+ResultadoService ..> Resultado
+RelatorioMedalhasService ..> ResultadoRepository
+RelatorioMedalhasService ..> LinhaQuadroMedalhas
+@enduml

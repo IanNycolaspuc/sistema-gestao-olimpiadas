@@ -1,0 +1,52 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam package {
+  BackgroundColor #F8FBFF
+  BorderColor #2E5EAA
+}
+
+title Sistema de Gestao das Olimpiadas - Diagrama de Pacotes
+
+package "apresentacao" as UI {
+  [Telas Web]
+  [Controllers]
+}
+
+package "aplicacao" as APP {
+  [CompeticaoService]
+  [InscricaoService]
+  [AlocacaoService]
+  [ResultadoService]
+  [RelatorioMedalhasService]
+}
+
+package "dominio" as DOM {
+  [Competicao]
+  [Atleta]
+  [Pais]
+  [Local]
+  [Inscricao]
+  [Resultado]
+  [ItemResultado]
+}
+
+package "persistencia" as PER {
+  [Repositories]
+  [Mapeamento ORM]
+}
+
+package "infraestrutura" as INFRA {
+  [Banco de Dados]
+  [Autenticacao]
+  [Gerador de Relatorios]
+  [Logs e Auditoria]
+}
+
+UI ..> APP : chama casos de uso
+APP ..> DOM : aplica regras de negocio
+APP ..> PER : consulta e salva dados
+PER ..> DOM : persiste entidades
+PER ..> INFRA : acessa recursos tecnicos
+APP ..> INFRA : autenticacao, relatorios e logs
+@enduml
